@@ -1,0 +1,88 @@
+{
+	"author": "davisvkz",
+	"bugs": {
+		"url": "https://github.com/davisvkz/ObsidianReactUI/issues"
+	},
+	"description": "React 19 + shadow-DOM runtime for building Obsidian UIs: reactive vault store, hooks, file-system routing, and a persistent MemoryRouter — designed to run as a DataviewJS-evaluated bundle.",
+	"devDependencies": {
+		"@mantine/core": "^8.3.2",
+		"@mantine/hooks": "^8.3.2",
+		"@testing-library/dom": "^10.4.1",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.2",
+		"@testing-library/user-event": "^14.6.1",
+		"@types/react": "^19.1.2",
+		"@types/react-dom": "^19.1.2",
+		"jsdom": "^29.1.1",
+		"obsidian": "^1.8.7",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"react-router": "^7.17.0",
+		"tsup": "^8.5.0",
+		"typescript": "~5.8.3",
+		"vitest": "^3.2.3"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./mantine": {
+			"types": "./dist/mantine.d.ts",
+			"import": "./dist/mantine.js",
+			"default": "./dist/mantine.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"homepage": "https://github.com/davisvkz/ObsidianReactUI#readme",
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"dataview",
+		"react",
+		"shadow-dom",
+		"react-router",
+		"mantine"
+	],
+	"license": "MIT",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"name": "obsidian-react-ui",
+	"peerDependencies": {
+		"@mantine/core": "^8.0.0",
+		"obsidian": ">=1.4.0",
+		"react": "^18.2.0 || ^19.0.0",
+		"react-dom": "^18.2.0 || ^19.0.0",
+		"react-router": "^7.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@mantine/core": {
+			"optional": true
+		}
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"directory": "packages/core",
+		"type": "git",
+		"url": "git+https://github.com/davisvkz/ObsidianReactUI.git"
+	},
+	"scripts": {
+		"build": "tsup",
+		"prepublishOnly": "npm run build",
+		"test": "vitest run",
+		"test:unit": "vitest run",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"version": "0.1.0"
+}

@@ -1,0 +1,44 @@
+{
+	"author": "davisvkz",
+	"bin": {
+		"create-obsidian-react-app": "index.js"
+	},
+	"bugs": {
+		"url": "https://github.com/davisvkz/ObsidianReactUI/issues"
+	},
+	"description": "Scaffold an Obsidian vault that embeds a React 19 + TypeScript SPA, rendered inside a note by the Dataview community plugin.",
+	"engines": {
+		"node": ">=18.17"
+	},
+	"files": [
+		"index.js",
+		"template",
+		"LICENSE"
+	],
+	"homepage": "https://github.com/davisvkz/ObsidianReactUI#readme",
+	"keywords": [
+		"obsidian",
+		"obsidian-vault",
+		"dataview",
+		"react",
+		"scaffold",
+		"create",
+		"cli"
+	],
+	"license": "MIT",
+	"name": "create-obsidian-react-app",
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"directory": "packages/create-obsidian-react-app",
+		"type": "git",
+		"url": "git+https://github.com/davisvkz/ObsidianReactUI.git"
+	},
+	"scripts": {
+		"prepack": "node ../../scripts/sync-template.mjs",
+		"sync-template": "node ../../scripts/sync-template.mjs"
+	},
+	"type": "module",
+	"version": "0.1.0"
+}

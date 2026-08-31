@@ -1,0 +1,47 @@
+name: Release
+
+# Manually triggered: pick a package and version bump, and this publishes it.
+# Requires an NPM_TOKEN repo secret (an npm automation token with publish
+# rights to both obsidian-react-ui and create-obsidian-react-app).
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to publish
+        required: true
+        type: choice
+        options:
+          - obsidian-react-ui
+          - create-obsidian-react-app
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # for npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:unit
+
+      - name: Publish obsidian-react-ui
+        if: ${{ inputs.package == 'obsidian-react-ui' }}
+        run: npm publish -w obsidian-react-ui --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish create-obsidian-react-app
+        if: ${{ inputs.package == 'create-obsidian-react-app' }}
+        run: npm publish -w create-obsidian-react-app --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

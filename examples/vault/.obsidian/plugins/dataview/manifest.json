@@ -1,0 +1,11 @@
+{
+	"author": "Michael Brenan <blacksmithgu@gmail.com>",
+	"authorUrl": "https://github.com/blacksmithgu",
+	"description": "Complex data views for the data-obsessed.",
+	"helpUrl": "https://blacksmithgu.github.io/obsidian-dataview/",
+	"id": "dataview",
+	"isDesktopOnly": false,
+	"minAppVersion": "0.13.11",
+	"name": "Dataview",
+	"version": "0.5.68"
+}

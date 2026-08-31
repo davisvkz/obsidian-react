@@ -1,0 +1,31 @@
+{
+	"name": "obsidian-react-monorepo",
+	"private": true,
+	"version": "0.0.0",
+	"license": "MIT",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/davisvkz/ObsidianReactUI"
+	},
+	"workspaces": [
+		"packages/*",
+		"examples/vault/.js"
+	],
+	"scripts": {
+		"build": "npm run build:core && npm run build:vault",
+		"build:core": "npm run build -w obsidian-react-ui",
+		"build:vault": "npm run build -w examples/vault/.js",
+		"test": "npm run test:unit",
+		"test:unit": "npm run build:core && npm run test:unit --workspaces --if-present",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"sync-template": "node scripts/sync-template.mjs"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.16"
+	},
+	"engines": {
+		"node": ">=18"
+	}
+}

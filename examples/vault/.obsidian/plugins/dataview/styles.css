@@ -1,0 +1,144 @@
+.block-language-dataview {
+	overflow-y: auto;
+}
+
+/*****************/
+/** Table Views **/
+/*****************/
+
+/* List View Default Styling; rendered internally as a table. */
+.table-view-table {
+	width: 100%;
+}
+
+.table-view-table > thead > tr,
+.table-view-table > tbody > tr {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	text-align: left;
+}
+
+.table-view-table > tbody > tr:hover {
+	background-color: var(--table-row-background-hover);
+}
+
+.table-view-table > thead > tr > th {
+	max-width: 100%;
+	font-size: larger;
+	font-weight: 700;
+	border-top: none;
+	border-right: none;
+	border-bottom: solid;
+	border-left: none;
+}
+
+.table-view-table > tbody > tr > td {
+	max-width: 100%;
+	font-weight: 400;
+	text-align: left;
+	border: none;
+}
+
+.table-view-table ul,
+.table-view-table ol {
+	margin-block-start: 0.2em !important;
+	margin-block-end: 0.2em !important;
+}
+
+/** Rendered value styling for any view. */
+.dataview-result-list-root-ul {
+	padding: 0em !important;
+	margin: 0em !important;
+}
+
+.dataview-result-list-ul {
+	margin-block-start: 0.2em !important;
+	margin-block-end: 0.2em !important;
+}
+
+/** Generic grouping styling. */
+.dataview.result-group {
+	padding-left: 8px;
+}
+
+/*******************/
+/** Inline Fields **/
+/*******************/
+
+.dataview.inline-field-key {
+	padding-right: 8px;
+	padding-left: 8px;
+	font-family: var(--font-monospace);
+	color: var(--nav-item-color-selected);
+	background-color: var(--background-primary-alt);
+}
+
+.dataview.inline-field-value {
+	padding-right: 8px;
+	padding-left: 8px;
+	font-family: var(--font-monospace);
+	color: var(--nav-item-color-selected);
+	background-color: var(--background-secondary-alt);
+}
+
+.dataview.inline-field-standalone-value {
+	padding-right: 8px;
+	padding-left: 8px;
+	font-family: var(--font-monospace);
+	color: var(--nav-item-color-selected);
+	background-color: var(--background-secondary-alt);
+}
+
+/***************/
+/** Task View **/
+/***************/
+
+.dataview.task-list-item,
+.dataview.task-list-basic-item {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	transition: 0.4s;
+}
+
+.dataview.task-list-item:hover,
+.dataview.task-list-basic-item:hover {
+	cursor: pointer;
+	background-color: var(--text-selection);
+	box-shadow: -40px 0 0 var(--text-selection);
+}
+
+/*****************/
+/** Error Views **/
+/*****************/
+
+div.dataview-error-box {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 150px;
+	border: 4px dashed var(--background-secondary);
+}
+
+.dataview-error-message {
+	color: var(--text-muted);
+	text-align: center;
+}
+
+/*************************/
+/** Additional Metadata **/
+/*************************/
+
+.dataview.small-text {
+	margin-left: 3px;
+	font-size: smaller;
+	color: var(--text-muted);
+}
+
+.dataview.small-text::before {
+	content: "(";
+}
+
+.dataview.small-text::after {
+	content: ")";
+}

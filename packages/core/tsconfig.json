@@ -1,0 +1,20 @@
+{
+	"$schema": "https://www.schemastore.org/tsconfig.json",
+	"compilerOptions": {
+		"declaration": true,
+		"declarationMap": true,
+		"jsx": "react-jsx",
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleDetection": "force",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"outDir": "dist",
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ES2020",
+		"types": [],
+		"verbatimModuleSyntax": true
+	},
+	"include": ["src"]
+}

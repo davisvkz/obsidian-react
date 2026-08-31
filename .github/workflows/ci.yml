@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:unit
+
+      # Proves obsidian-react-ui's published shape actually works: pack it,
+      # install it into a throwaway project (like a real consumer would),
+      # and import from both entry points.
+      - name: Smoke-test the packed obsidian-react-ui tarball
+        run: |
+          set -e
+          cd packages/core
+          npm pack
+          mkdir -p /tmp/orui-smoke && cd /tmp/orui-smoke
+          npm init -y >/dev/null
+          npm install --no-save react react-dom "react-router@^7.17.0" "@mantine/core@^8.3.2" obsidian
+          npm install --no-save "$GITHUB_WORKSPACE/packages/core"/obsidian-react-ui-*.tgz
+          node -e "
+            Promise.all([import('obsidian-react-ui'), import('obsidian-react-ui/mantine')])
+              .then(([core, mantine]) => {
+                if (!core.AppContext || !core.mountShadowReact) throw new Error('core exports missing');
+                if (!mantine.mantineRender) throw new Error('mantine export missing');
+                console.log('obsidian-react-ui smoke test OK');
+              });
+          "
+
+      # Proves the scaffolder's template is in sync and produces a real,
+      # buildable project (against the same tarball, since the registry
+      # copy of obsidian-react-ui may lag what this commit just built).
+      - name: Smoke-test the scaffolder end-to-end
+        run: |
+          set -e
+          cd packages/create-obsidian-react-app
+          npm pack
+          rm -rf /tmp/scaffold-test
+          node index.js /tmp/scaffold-test --yes --no-install --no-git
+          node -e "
+            const fs = require('fs');
+            const p = '/tmp/scaffold-test/.js/package.json';
+            const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+            pkg.dependencies['obsidian-react-ui'] = 'file:$GITHUB_WORKSPACE/packages/core/obsidian-react-ui-0.1.0.tgz';
+            fs.writeFileSync(p, JSON.stringify(pkg, null, '\t') + '\n');
+          "
+          cd /tmp/scaffold-test/.js
+          npm install
+          npm run build
+          test -f ../.obsidian/scripts/bundle.js
+          node --check ../.obsidian/scripts/bundle.js
+          head -c 8 ../.obsidian/scripts/bundle.js | grep -q '(() => {' && echo "bundle is a valid IIFE"
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build:core
+      - run: npm run test -w examples/vault/.js
+        env:
+          OBSIDIAN_HEADLESS: "1"

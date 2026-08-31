@@ -1,28 +1,35 @@
 # obsidian-react-template
 
-> **A template for building React 19 + TypeScript single-page apps that run inside an Obsidian note.**
+> **A template + library for building React 19 + TypeScript single-page apps that run inside an Obsidian note.**
 
-This is **not an Obsidian plugin**. It is an **Obsidian vault** that embeds a full React SPA by compiling it into a self-contained JS bundle that the community [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin evaluates at runtime. One note (`index.md`) holds a single inline DataviewJS line that loads and runs your compiled app.
+This is **not an Obsidian plugin**. It's a way to embed a full React SPA in a **note**, by compiling it into a self-contained JS bundle that the community [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin evaluates at runtime — one note (`index.md`) holds a single inline DataviewJS line that loads and runs your compiled app.
 
-The shipped example is a recursive **to-do app** that demonstrates the full stack: file-system routing, live reactive reads and writes to the vault, and a complete [Mantine 8](https://mantine.dev/) + [Tailwind CSS 4](https://tailwindcss.com/) UI — all inside Obsidian.
+This repository is a monorepo with three parts:
 
----
-
-## Table of contents
-
-1. [Tech stack](#tech-stack)
-2. [Prerequisites](#prerequisites)
-3. [Quickstart](#quickstart)
-4. [Project structure](#project-structure)
-5. [How it works](#how-it-works)
-6. [File-system routing](#file-system-routing)
-7. [Build your own feature](#build-your-own-feature)
-8. [Scripts reference](#scripts-reference)
-9. [Testing](#testing)
-10. [Gotchas](#gotchas)
-11. [License](#license)
+| | What | Published as |
+|---|---|---|
+| [`packages/core`](packages/core) | The reusable runtime: shadow-DOM mount, reactive vault store + hooks, `PersistentRouter`, file-system routing | [`obsidian-react-ui`](https://www.npmjs.com/package/obsidian-react-ui) on npm |
+| [`packages/create-obsidian-react-app`](packages/create-obsidian-react-app) | A scaffolding CLI that generates a ready-to-open vault | [`create-obsidian-react-app`](https://www.npmjs.com/package/create-obsidian-react-app) on npm |
+| [`examples/vault`](examples/vault) | A full example vault (a recursive to-do app) consuming the library — also the e2e test target | not published; it's the source `create-obsidian-react-app`'s template is generated from |
 
 ---
+
+## Quickstart — scaffold your own vault
+
+```bash
+npm create obsidian-react-app@latest my-vault
+# or: npx create-obsidian-react-app my-vault / pnpm create / yarn create / bun create
+```
+
+Then open `my-vault` as a vault in Obsidian (`File → Open Vault → Open folder as vault`), trust it, and open `index.md`. See [`packages/create-obsidian-react-app/README.md`](packages/create-obsidian-react-app/README.md) for CLI options.
+
+## Quickstart — already have a vault
+
+```bash
+npm install obsidian-react-ui react react-dom react-router obsidian
+```
+
+See [`packages/core/README.md`](packages/core/README.md) for usage, the CSS contract (why styles have to be handed in as a string), and the full API.
 
 ## Tech stack
 
@@ -30,104 +37,48 @@ The shipped example is a recursive **to-do app** that demonstrates the full stac
 |---|---|
 | UI framework | React 19 + TypeScript ~5.8 |
 | Router | react-router 7 (MemoryRouter mode) |
-| UI components | Mantine 8 (full suite), Tabler icons, Lucide React |
+| UI components | Mantine 8, Tabler icons |
 | Styling | Tailwind CSS 4, Mantine PostCSS preset |
-| Bundler | **Rspack** 1.5 (+ SWC loader) |
-| Package manager | **Bun** |
+| Bundler (example vault) | **Rspack** 1.5 (+ SWC loader) |
+| Library bundler | **tsup** (esbuild + rollup-plugin-dts) |
+| Package manager | **npm** workspaces |
 | Linter / formatter | **Biome** 2.4 |
 | Unit tests | **Vitest** 3 (node + jsdom projects) |
 | E2E tests | **WebdriverIO** 9 against a real Obsidian instance |
-| Runtime host | **Dataview** community plugin (vendored in this repo) |
+| Runtime host | **Dataview** community plugin (vendored in `examples/vault/`) |
 
 ---
 
-## Prerequisites
-
-- [Obsidian](https://obsidian.md/) desktop app (any recent version)
-- [Bun](https://bun.sh/) package manager (`curl -fsSL https://bun.sh/install | bash`)
-- The **Dataview** community plugin — it is already **vendored** in this repo at `.obsidian/plugins/dataview/`, so you do not need to install it separately. Obsidian will ask you to trust and enable community plugins the first time you open the vault; just confirm.
-
----
-
-## Quickstart
+## Developing in this monorepo
 
 ```bash
-# 1. Clone the repo
-git clone <your-fork-url> my-obsidian-app
-cd my-obsidian-app
-
-# 2. Install dependencies (all source lives under .js/)
-cd .js
-bun install
-
-# 3. Build the bundle
-bun run build
-# → writes ../.obsidian/scripts/bundle.js
+npm install
+npm run build          # builds obsidian-react-ui, then examples/vault/.js
+npm run test:unit       # unit tests for both packages
+npm run lint            # biome check
 ```
 
-Then open the **repo root folder** as a vault in Obsidian (`File → Open Vault → Open folder as vault`), enable community plugins when prompted, and open the `index.md` note. Your app renders inside the note.
-
-### Live rebuilds
-
-There is no built-in watch mode, but a rebuild is fast (~1 s). Run:
-
-```bash
-# in .js/
-bun run build
-```
-
-After each build the custom `AddFilePlugin` toggles a marker file (`.obsidian/scripts/a.md`) which nudges Dataview into re-evaluating the bundle — the app reloads automatically in the open note.
-
----
-
-## Project structure
+### Project structure
 
 ```
-(vault root)
-├── index.md                  ← the only file Obsidian "runs"; holds the DataviewJS one-liner
-├── todos/                    ← example data folder created by the to-do app at runtime
-├── .obsidian/
-│   ├── plugins/dataview/     ← vendored Dataview plugin (required runtime host)
-│   └── scripts/
-│       └── bundle.js         ← BUILD OUTPUT — do not hand-edit; regenerated by `bun run build`
-└── .js/                      ← ALL source code, config, and tests live here
-    ├── package.json
-    ├── rspack.config.js      ← bundler config (IIFE output + CSS inlining)
-    ├── biome.json
-    ├── vitest.config.ts
-    ├── wdio.conf.mts         ← WebdriverIO e2e config
-    ├── globals.d.ts          ← ambient types (__STYLE__, window singletons, require.context)
-    ├── tsconfig.json
-    └── src/
-        ├── index.tsx         ← app entry point
-        ├── index.css         ← global styles (PostCSS / Tailwind / Mantine)
-        ├── lib/              ← reusable reactive core — keep this, replace everything else
-        │   ├── render.tsx        shadow-DOM mount primitive; AppContext / HostContext
-        │   ├── mantine.tsx       mantineRender() — Mantine + AppContext wrapper
-        │   ├── router.tsx        PersistentRouter (MemoryRouter that survives re-evals)
-        │   ├── fsRoutes.ts       createFsRoutes() — file → route convention
-        │   ├── store.ts          reactive vault store (vault / metadataCache events)
-        │   ├── reactiveCache.ts  per-key snapshot cache with subscriber pruning
-        │   ├── snapshot.ts       MdSnapshot / Subfolder types, stripFrontmatter
-        │   ├── path.ts           path helpers
-        │   ├── useMarkdownFile.tsx  hooks: useApp, useMarkdownFile, useSubfolders, useFolderFiles
-        │   └── index.ts          barrel re-export
-        ├── routes/           ← page components (auto-discovered; delete/replace for your app)
-        │   ├── _layout.tsx       root layout wrapper
-        │   ├── index.tsx         "/" — to-do list homepage
-        │   └── [id].tsx          "/:id" — subtask detail view
-        └── examples/         ← demo domain logic (delete/replace for your app)
-            ├── todo.tsx          Todo components + createTodoFolder()
-            └── todoNaming.ts     sanitizeFolderName() helper
+.
+├── package.json                          workspace root (private)
+├── packages/
+│   ├── core/                             obsidian-react-ui — the published library
+│   │   └── src/                          render, router, fsRoutes, store, hooks…
+│   └── create-obsidian-react-app/        the scaffolding CLI
+│       ├── index.js                      zero-dependency Node CLI
+│       └── template/                     GENERATED — gitignored, see scripts/sync-template.mjs
+├── examples/vault/                       the example Obsidian vault
+│   ├── index.md                          the note that renders the app
+│   ├── .obsidian/                        vendored Dataview plugin + config
+│   └── .js/                              app source, consumes obsidian-react-ui via workspace
+└── scripts/sync-template.mjs             generates the CLI's template/ from examples/vault/
 ```
 
-**`lib/` is the reusable core.** The `routes/` and `examples/` directories are the demo to-do app — you can delete them entirely and write your own routes.
+`examples/vault/` is the **single source of truth** for the scaffolder's template — `scripts/sync-template.mjs` regenerates `packages/create-obsidian-react-app/template/` from it (via `git ls-files`, so build artifacts and caches are never swept in), and runs automatically on `npm pack`/`npm publish` through that package's `prepack` script.
 
----
-
-## How it works
-
-### Boot chain
+### How the vault app works
 
 ```
 Obsidian opens index.md
@@ -136,227 +87,18 @@ Obsidian opens index.md
                     └─▶ eval(bundle)  →  returns the default export (an async function)
                             └─▶ calls lib(dv)  where dv = DataviewInlineApi
                                     └─▶ mantineRender(dv, <PersistentRouter routes={routes} />)
-                                            └─▶ mountShadowReact()
-                                                    └─▶ React renders inside a shadow DOM
+                                            └─▶ mounts React inside an isolated shadow DOM
 ```
 
-**`index.md`** (the entire note):
+`examples/vault/.js/rspack.config.js` compiles `src/index.tsx`, inlines all CSS into a `const __STYLE__ = "..."` string, and wraps the output in an IIFE that returns the default export — so `eval(bundle)` produces the callable function directly. `.js/` must stay a direct child of the vault root: the build output path (`../.obsidian/scripts/bundle.js`) is resolved relative to it.
 
-```
-`$=const lib = await eval(await app.vault.adapter.read('.obsidian/scripts/bundle.js'));lib(dv)`
-```
-
-**`src/index.tsx`** (the entire entry file):
-
-```tsx
-import "./index.css";
-import type { DataviewInlineApi } from "obsidian-dataview/lib/api/inline-api";
-import { createFsRoutes, mantineRender, PersistentRouter } from "@/lib";
-
-const routes = createFsRoutes(require.context("./routes", true, /\.(tsx|ts)$/));
-
-export default async function (dv: DataviewInlineApi) {
-    return mantineRender(dv, <PersistentRouter routes={routes} />);
-}
-```
-
-### The IIFE + CSS bundle
-
-Rspack compiles `src/index.tsx` and wraps the output in an IIFE using a custom `ReturnLibraryWithCSSPlugin`. The IIFE:
-
-1. Collects **all emitted CSS** into a single string injected as `const __STYLE__ = "..."`.
-2. Returns the default export so `eval(bundle)` produces the callable function directly.
-3. Writes the result to **`../.obsidian/scripts/bundle.js`** — i.e. relative to `.js/`, which must sit inside the vault.
-
-### Shadow DOM isolation
-
-`render.tsx → mountShadowReact()` creates a `container > host > shadowRoot > mount` tree, injects `__STYLE__` into the shadow, and renders the React tree inside it. This isolates all Mantine/Tailwind styles from Obsidian's own CSS so there are no conflicts.
-
-### Surviving re-evaluations
-
-Dataview re-evaluates the bundle on every render cycle. To avoid losing state on each eval, three singletons are persisted on `window`:
-
-| Key | Purpose |
-|---|---|
-| `window.__mdRoot__` | The React root — unmounted cleanly before each re-mount |
-| `window.__mdStore__` | The reactive vault store — subscribes to vault/metadataCache events once |
-| `window.__mdRouterPath__` | Current route path — restored into MemoryRouter on each re-mount |
-
-The store (`store.ts` + `reactiveCache.ts`) debounces vault events at 24 ms and feeds React components via `useSyncExternalStore`. Orphaned subscribers (those whose `host.isConnected === false`) are pruned automatically so there are no memory leaks across re-evals.
-
----
-
-## File-system routing
-
-`createFsRoutes` (`.js/src/lib/fsRoutes.ts`) converts the `src/routes/` directory into a `RouteObject[]` for react-router using the following convention:
-
-| File | Route path |
-|---|---|
-| `src/routes/index.tsx` | `/` |
-| `src/routes/about.tsx` | `/about` |
-| `src/routes/[param].tsx` | `/:param` |
-| `src/routes/todo/[id].tsx` | `/todo/:id` |
-| `src/routes/_layout.tsx` | pathless layout wrapping all routes (via `<Outlet />`) |
-| `src/routes/todo/_layout.tsx` | pathless layout wrapping only routes inside `todo/` |
-
-This is **MemoryRouter** (in-memory history), not browser routing. There is no URL bar — routing exists purely as in-app state because the app lives inside an eval context with no real browser location.
-
----
-
-## Build your own feature
-
-### Step 1 — Add a route
-
-Create any `.tsx` file under `src/routes/` and it is auto-discovered on the next build:
-
-```tsx
-// src/routes/notes.tsx
-export default function NotesPage() {
-    return <div>My notes feature</div>;
-}
-```
-
-This is automatically available at path `/notes`.
-
-### Step 2 — Read vault data
-
-Use the hooks from `lib/`:
-
-```tsx
-import { useApp, useMarkdownFile, useFolderFiles, useSubfolders } from "@/lib";
-
-function MyComponent() {
-    const app = useApp();                                   // Obsidian App instance
-    const file = useMarkdownFile("path/to/note.md");        // reactive frontmatter + body
-    const files = useFolderFiles("my-folder");              // reactive list of files in folder
-    const subs  = useSubfolders("my-folder");               // reactive list of subfolders
-}
-```
-
-All hooks re-render automatically when the vault changes (vault events → debounced store update → `useSyncExternalStore`).
-
-### Step 3 — Write vault data
-
-Use the Obsidian API via `useApp()`, following the pattern in `examples/todo.tsx`:
-
-```tsx
-import { useApp } from "@/lib";
-import { sanitizeFolderName } from "@/examples/todoNaming";
-
-async function createItem(app: App, parent: string, name: string) {
-    const safeName = sanitizeFolderName(name);             // strips invalid path chars
-    const folderPath = `${parent}/${safeName}`;
-    await app.vault.createFolder(folderPath);
-    await app.vault.create(`${folderPath}/index.md`, "---\ndone: false\n---\n");
-}
-
-// Trash a file or folder:
-await app.vault.trash(file, /* system trash */ true);
-```
-
-### Step 4 — Build and reload
+### Testing
 
 ```bash
-cd .js
-bun run build   # rebuilds and triggers Dataview reload in Obsidian
+npm run test:unit                          # vitest, both packages
+npm run test -w examples/vault/.js          # wdio e2e against a real Obsidian instance
 ```
-
-### Cleaning up the demo
-
-To start with a blank slate, delete `src/routes/` and `src/examples/` (or just clear their contents). Keep `src/lib/` — it is the reactive framework everything else depends on.
-
----
-
-## Scripts reference
-
-Run all commands from inside the `.js/` directory.
-
-| Command | What it does |
-|---|---|
-| `bun run build` | Rspack build → writes `.obsidian/scripts/bundle.js`. Sends a desktop notification on Linux via `notify-send` (remove this suffix on macOS/Windows). |
-| `bun run test` | Runs `pretest` (build) then WebdriverIO e2e suite against a real Obsidian instance |
-| `bun run test:headless` | Same as `test` but Obsidian runs headless (`OBSIDIAN_HEADLESS=1`) |
-| `bun run test:unit` | Runs Vitest once (unit + dom projects) |
-| `bun run test:unit:watch` | Runs Vitest in watch mode |
-
-**Linting and formatting (Biome):**
-
-```bash
-bunx biome check .              # lint + format check (no writes)
-bunx biome check --write .      # auto-fix all lint and format issues
-```
-
----
-
-## Testing
-
-### Unit tests — Vitest
-
-```bash
-bun run test:unit
-```
-
-Vitest is configured with two projects:
-
-- **`unit`** — Node environment, matches `test/unit/**/*.test.ts`. Pure logic, no DOM.
-- **`dom`** — jsdom environment, matches `test/unit/**/*.dom.test.tsx`. Component tests using React Testing Library.
-
-The `obsidian` package is **mocked** at `test/unit/__mocks__/obsidian.ts` so unit tests never call the real Obsidian API. Path alias `@` → `./src` is active in both projects.
-
-### E2E tests — WebdriverIO against real Obsidian
-
-```bash
-bun run test          # with UI
-bun run test:headless # headless (CI-friendly)
-```
-
-The `wdio-obsidian-service` downloads and caches an Obsidian binary (default: `latest`) into `.obsidian-cache/`, installs the vendored Dataview plugin into the sandbox vault at `test/vaults/simple/`, opens Obsidian, evaluates the built bundle, and runs the specs in `test/specs/**/*.e2e.ts`.
-
-Useful environment variables:
-
-| Variable | Default | Effect |
-|---|---|---|
-| `OBSIDIAN_HEADLESS` | `0` | Set to `1` to suppress the Obsidian window |
-| `OBSIDIAN_VERSIONS` | `latest/latest` | Pin Obsidian version(s) under test |
-| `WDIO_MAX_INSTANCES` | `1` | Parallel spec workers |
-
-`pretest` runs `rspack build` automatically, so the bundle is always up to date before the e2e suite runs.
-
----
-
-## Gotchas
-
-### `.js/` must stay inside the vault
-
-Rspack writes its output to `path.resolve(__dirname, '../.obsidian/scripts')`. This resolves correctly only when `.js/` is a direct child of the vault root, next to `.obsidian/`. **Do not move `.js/` outside the vault.**
-
-### Never hand-edit `bundle.js`
-
-`.obsidian/scripts/bundle.js` is the build artefact. Every `bun run build` overwrites it entirely. Any manual edits will be lost.
-
-### CSS constraints inside the shadow DOM
-
-The PostCSS pipeline in `rspack.config.js` rewrites styles for shadow-DOM compatibility. To avoid broken styles, follow these rules in your own CSS:
-
-| Avoid | Reason |
-|---|---|
-| `@layer` | stripped by `removeLayerRules` PostCSS plugin |
-| `@property` | stripped by `removePropertyRules` PostCSS plugin |
-| `@supports` | stripped by `removeSupportsRules` PostCSS plugin |
-| Bare `:root` selector | rewritten to `:host>div` by `replaceRootWithHost` plugin |
-
-Use CSS custom properties on `:host>div` instead of `:root`, and skip `@layer` entirely.
-
-### TypeScript path alias
-
-The `@` alias resolves to `.js/src/`. Import your own modules as `@/lib`, `@/routes/...`, etc. This is configured in both `tsconfig.json` and `rspack.config.js`.
-
----
 
 ## License
 
-This project is licensed under the **MIT License** — see the [`LICENSE`](LICENSE) file for details.
-
-Copyright (c) 2026 davisvkz
-
-The **Dataview plugin** is vendored at `.obsidian/plugins/dataview/` under its own MIT license. See [`https://github.com/blacksmithgu/obsidian-dataview`](https://github.com/blacksmithgu/obsidian-dataview) for details.
+MIT — see [`LICENSE`](LICENSE). The vendored Dataview plugin (`examples/vault/.obsidian/plugins/dataview/`) is included under its own MIT license — see the `LICENSE` file alongside it.
