@@ -5,7 +5,7 @@ import { browser, expect } from "@wdio/globals";
 import { describe, it } from "mocha";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BUNDLE_PATH = path.resolve(__dirname, "../../.obsidian/scripts/bundle.js");
+const BUNDLE_PATH = path.resolve(__dirname, "../../../.obsidian/scripts/bundle.js");
 // Same path the production snippet reads (relative to the vault root).
 const VAULT_BUNDLE_PATH = ".obsidian/scripts/bundle.js";
 
