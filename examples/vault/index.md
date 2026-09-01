@@ -1,1 +1,1 @@
-`$=let f=dv.current().file.folder.replace(/\/+$/,''),p,a=app.vault.adapter;while(!p){const c=(f?f+'/':'')+'.obsidian/scripts/bundle.js';if(await a.exists(c))p=c;else if(f)f=f.replace(/\/?[^/]+$/,'');else break}(await eval(await a.read(p)))(dv)`
+`$=let f=(app.workspace.getActiveFile()?.parent?.path??'').replace(/\/+$/,''),p,a=app.vault.adapter;while(!p){const c=(f?f+'/':'')+'.obsidian/scripts/bundle.js';if(await a.exists(c))p=c;else if(f)f=f.replace(/\/?[^/]+$/,'');else break}(await eval(await a.read(p)))(dv)`
