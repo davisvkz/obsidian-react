@@ -54,9 +54,13 @@ jobs:
           node index.js /tmp/scaffold-test --yes --no-install --no-git
           node -e "
             const fs = require('fs');
+            const path = require('path');
+            const coreDir = '$GITHUB_WORKSPACE/packages/core';
+            const tarball = fs.readdirSync(coreDir).find((f) => /^obsidian-react-ui-.*\.tgz$/.test(f));
+            if (!tarball) throw new Error('obsidian-react-ui tarball not found in ' + coreDir);
             const p = '/tmp/scaffold-test/.js/package.json';
             const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-            pkg.dependencies['obsidian-react-ui'] = 'file:$GITHUB_WORKSPACE/packages/core/obsidian-react-ui-0.1.0.tgz';
+            pkg.dependencies['obsidian-react-ui'] = 'file:' + path.join(coreDir, tarball);
             fs.writeFileSync(p, JSON.stringify(pkg, null, '\t') + '\n');
           "
           cd /tmp/scaffold-test/.js
