@@ -73,7 +73,7 @@ describe("ReactiveCache", () => {
 		expect(s1).not.toBe(s2);
 	});
 
-	it("flush does not notify a subscriber with a disconnected host (orphan pruning)", () => {
+	it("flush still notifies a subscriber with a disconnected host (no auto-pruning)", () => {
 		const cb = vi.fn();
 		const deadHost = { isConnected: false } as unknown as Node;
 		const unsub = cache.subscribe("a", cb, deadHost);
@@ -82,7 +82,7 @@ describe("ReactiveCache", () => {
 		cache.invalidate("a");
 		cache.flush();
 
-		expect(cb).not.toHaveBeenCalled();
+		expect(cb).toHaveBeenCalledTimes(1);
 
 		unsub();
 	});

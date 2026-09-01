@@ -28,9 +28,6 @@ type ReadFn<T> = (app: App, key: string) => T;
 /**
  * Binds a `key` to a reactive store cache via `useSyncExternalStore`.
  * Stabilises `subscribe` with `useCallback` to avoid re-subscriptions on every render.
- * Uses `HostContext` as a sentinel for orphaned subscribers — when Dataview detaches
- * the container from the shadow DOM, `mount.isConnected === false` and the cache
- * automatically prunes the subscriber.
  */
 function useStoreValue<T>(
 	subscribeFn: SubscribeFn,

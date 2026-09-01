@@ -42,8 +42,7 @@ function resolveCss(css?: string): string {
  *   run even when Dataview swaps the container without unmounting React.
  * - Creates a `host > shadow > mount` and injects the shadow root's CSS
  *   (see `MountShadowReactOptions.css`).
- * - Exposes `mount` via `HostContext` so hooks can use it as an orphan-subscriber
- *   sentinel (`mount.isConnected === false` after Dataview removes the container).
+ * - Exposes `mount` via `HostContext` for hooks that need the mounted element.
  * - `renderTree(mount)` must return the `ReactNode` to render — receives `mount`
  *   so external wrappers (e.g. MantineProvider) can reference the element.
  */

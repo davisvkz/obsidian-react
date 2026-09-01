@@ -65,7 +65,6 @@ export class ReactiveCache<T> {
 	}
 
 	private notifySubscribers(subscribers: Set<Subscriber>): void {
-		for (const s of subscribers) if (s.host && !s.host.isConnected) subscribers.delete(s);
 		for (const s of subscribers) s.cb();
 	}
 }
